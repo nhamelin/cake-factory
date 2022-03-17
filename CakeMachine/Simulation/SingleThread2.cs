@@ -25,10 +25,14 @@ namespace CakeMachine.Simulation
 
 
                 foreach (GâteauCru g in L) {
-                    var gâteauCuit = usine.Fours.First().Cuire(g).Single();
-                    var gâteauEmballé = usine.Emballeuses.First().Emballer(gâteauCuit);
+                    var gâteauCuit = usine.Fours.First().Cuire(g);
+                    foreach (GâteauCuit gateau in gâteauCuit)
+                    {
+                        var gâteauEmballé = usine.Emballeuses.First().Emballer(gateau);
+                        yield return gâteauEmballé;
+                    }
 
-                    yield return gâteauEmballé;
+                   
                 }
 
                
