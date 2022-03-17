@@ -17,21 +17,27 @@ namespace CakeMachine.Simulation
                 List<GâteauCru> ListeGâteauCrus = new List<GâteauCru>();
                 List<GâteauCuit> ListeGâteauCuits = new List<GâteauCuit>();
                 List<GâteauEmballé> ListeGâteauEmballés = new List<GâteauEmballé>();
-
+ 
                 do
                 {
                     var gâteauCru = usine.Préparateurs.First().Préparer(plat);
                     ListeGâteauCrus.Add(gâteauCru);
-                } while (ListeGâteauCrus.Count == 10 );
+                } while (ListeGâteauCrus.Count < 10 );
+                
                 do
                 {
                     foreach (GâteauCru g in ListeGâteauCrus)
                     {
-
-                        var gâteauCuit = usine.Fours.First().Cuire(g).Single();
-                        ListeGâteauCuits.Add(gâteauCuit);
+ 
+                        var gâteauCuit = usine.Fours.First().Cuire(g);
+                        foreach(GâteauCuit gc in gâteauCuit)
+                        {
+                            ListeGâteauCuits.Add(gc);
+ 
+                        }
                     }
-                } while (ListeGâteauCuits.Count == 10 );
+                } while (ListeGâteauCuits.Count < 10 );
+                
                 do
                 {
                     foreach (GâteauCuit gc in ListeGâteauCuits)
@@ -39,17 +45,12 @@ namespace CakeMachine.Simulation
                         var gâteauEmballé = usine.Emballeuses.First().Emballer(gc);
                         ListeGâteauEmballés.Add(gâteauEmballé);
                     }
-                } while (ListeGâteauCrus.Count == 10 );
-
-
-             
+                } while (ListeGâteauCuits.Count < 10 );
+     
                 foreach(GâteauEmballé ge in ListeGâteauEmballés)
                 {
                     yield return ge;
                 }
-                   
-                
-
             }
         }
     }
