@@ -3,7 +3,7 @@ using CakeMachine.Fabrication.Elements;
 
 namespace CakeMachine.Simulation
 {
-    internal class SingleThread : Algorithme
+    internal class FourRempli : Algorithme
     {
         /// <inheritdoc />
         public override bool SupportsSync => true;
@@ -17,13 +17,15 @@ namespace CakeMachine.Simulation
 
             while (!token.IsCancellationRequested)
             {
-                var plat = new Plat();
+                var plats = Enumerable.Range(0, usine.OrganisationUsine.ParamètresCuisson.NombrePlaces)
+                    .Select(_ => new Plat());
 
-                var gâteauCru = postePréparation.Préparer(plat);
-                var gâteauCuit = posteCuisson.Cuire(gâteauCru).Single();
-                var gâteauEmballé = posteEmballage.Emballer(gâteauCuit);
-                
-                yield return gâteauEmballé;
+                var gâteauxCrus = plats.Select(postePréparation.Préparer);
+                var gâteauxCuits = posteCuisson.Cuire(gâteauxCrus.ToArray());
+                var gâteauxEmballés = gâteauxCuits.Select(posteEmballage.Emballer).ToArray();
+
+                foreach (var gâteauEmballé in gâteauxEmballés)
+                    yield return gâteauEmballé;
             }
         }
     }
