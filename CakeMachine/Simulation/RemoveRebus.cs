@@ -14,6 +14,49 @@ namespace CakeMachine.Simulation
             while (!token.IsCancellationRequested)
             {
                 var plat = new Plat();
+
+                if (plat.EstConforme)
+                {
+                    var gâteauCru = usine.Préparateurs.First().Préparer(plat);
+
+                    if (gâteauCru.EstConforme)
+                    {
+                        var gâteauCuit = usine.Fours.First().Cuire(gâteauCru).Single();
+
+                        if (gâteauCuit.EstConforme)
+                        {
+                            var gâteauEmballé = usine.Emballeuses.First().Emballer(gâteauCuit);
+
+                            if (gâteauEmballé.EstConforme)
+                            {
+                                yield return gâteauEmballé;
+                            }
+                            else
+                            {
+                                plat = new Plat();
+                            }
+                        }
+                        else
+                        {
+                            plat = new Plat();
+                        }
+                    }
+                    else
+                    {
+                        plat = new Plat();
+                    }
+                }
+                else
+                {
+                    plat = new Plat();
+                }
+            }
+        }
+    }
+}
+
+/*
+ var plat = new Plat();
                 do
                 {
                     plat = new Plat();
@@ -34,7 +77,4 @@ namespace CakeMachine.Simulation
                     gâteauEmballé = usine.Emballeuses.First().Emballer(gâteauCuit);
                 } while (!gâteauEmballé.EstConforme);
                 yield return gâteauEmballé;
-            }
-        }
-    }
-}
+ */
