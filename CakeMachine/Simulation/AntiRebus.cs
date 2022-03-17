@@ -3,7 +3,7 @@ using CakeMachine.Fabrication.Elements;
 
 namespace CakeMachine.Simulation
 {
-    internal class SingleThread : Algorithme
+    internal class AntiRebus : Algorithme
     {
         /// <inheritdoc />
         public override bool SupportsSync => true;
@@ -19,10 +19,16 @@ namespace CakeMachine.Simulation
             {
                 var plat = new Plat();
 
-                var gâteauCru = postePréparation.Préparer(plat);
-                var gâteauCuit = posteCuisson.Cuire(gâteauCru).Single();
-                var gâteauEmballé = posteEmballage.Emballer(gâteauCuit);
+                GâteauCru gâteauCru;
+                do gâteauCru = postePréparation.Préparer(plat);
+                while (!gâteauCru.EstConforme);
                 
+                var gâteauCuit = posteCuisson.Cuire(gâteauCru).Single();
+                if(!gâteauCuit.EstConforme) continue;
+
+                var gâteauEmballé = posteEmballage.Emballer(gâteauCuit);
+                if (!gâteauEmballé.EstConforme) continue;
+
                 yield return gâteauEmballé;
             }
         }
