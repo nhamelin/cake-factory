@@ -20,11 +20,10 @@ namespace CakeMachine.Simulation
                 var gâteauCru1 = usine.Préparateurs.First().Préparer(plat1);
                 var gâteauCru2 = usine.Préparateurs.First().Préparer(plat2);
 
-                var gâteauCuit1 = usine.Fours.First().Cuire(gâteauCru1).Single();
-                var gâteauCuit2 = usine.Fours.First().Cuire(gâteauCru2).Single();
+                var gâteauCuit = usine.Fours.First().Cuire(gâteauCru1, gâteauCru2);
 
-                var gâteauEmballé1 = usine.Emballeuses.First().Emballer(gâteauCuit1);
-                var gâteauEmballé2 = usine.Emballeuses.First().Emballer(gâteauCuit2);
+                var gâteauEmballé1 = usine.Emballeuses.First().Emballer(gâteauCuit[0]);
+                var gâteauEmballé2 = usine.Emballeuses.First().Emballer(gâteauCuit[1]);
 
                 yield return gâteauEmballé1;
                 yield return gâteauEmballé2;
