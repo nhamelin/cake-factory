@@ -6,7 +6,7 @@ using CakeMachine.Utils;
 
 namespace CakeMachine.Simulation
 {
-    internal class DixParDix : Algorithme
+    public class DixParDix : Algorithme
     {
         /// <inheritdoc />
         public override bool SupportsSync => true;
