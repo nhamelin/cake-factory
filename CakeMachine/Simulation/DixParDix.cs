@@ -51,49 +51,68 @@ namespace CakeMachine.Simulation
         /// <inheritdoc />
         public override async IAsyncEnumerable<GâteauEmballé> ProduireAsync(Usine usine, [EnumeratorCancellation] CancellationToken token)
         {
-            var capacitéFour = usine.OrganisationUsine.ParamètresCuisson.NombrePlaces;
-
-            var postePréparation = usine.Préparateurs.Single();
-            var posteEmballage = usine.Emballeuses.Single();
-            var posteCuisson = usine.Fours.Single();
 
             while (!token.IsCancellationRequested)
             {
-                var plats = Enumerable.Range(0, 10).Select(_ => new Plat());
+                var plat = new Plat();
+                List<Task<GâteauCru>> ListeGâteauCrusTask = new List<Task<GâteauCru>>();
+                List<GâteauCuit> ListeGâteauCuits = new List<GâteauCuit>();
+                List<Task<GâteauEmballé>> ListeGâteauEmballésTask = new List<Task<GâteauEmballé>>();
 
-                var gâteauxCrus = plats
-                    .Select(postePréparation.PréparerAsync)
-                    .EnumerateCompleted();
+                do
+                {
+                    var gâteauCruTask = usine.Préparateurs.First().PréparerAsync(plat);
+                    ListeGâteauCrusTask.Add(gâteauCruTask);
 
-                var gâteauxCuits = CuireParLotsAsync(gâteauxCrus, posteCuisson, capacitéFour);
 
-                var tâchesEmballage = new List<Task<GâteauEmballé>>();
-                await foreach(var gâteauCuit in gâteauxCuits.WithCancellation(token))
-                    tâchesEmballage.Add(posteEmballage.EmballerAsync(gâteauCuit));
+                } while (ListeGâteauCrusTask.Count < 10);
 
-                await foreach (var gâteauEmballé in tâchesEmballage.EnumerateCompleted().WithCancellation(token))
-                    yield return gâteauEmballé;
+                do
+                {
+
+                    var gâteauxCrus = await Task.WhenAll(ListeGâteauCrusTask);
+                    GâteauCru[] lot1 = gâteauxCrus.Take(5).ToArray();
+                    GâteauCru[] lot2 = gâteauxCrus.TakeLast(5).ToArray();
+
+
+                    //var gâteauCuits1 = await gâteauxCrus.Select(usine.Fours.Single().CuireAsync();
+                    var gâteauCuits1 = await usine.Fours.Single().CuireAsync(lot1);
+                    var gâteauCuits2 = await usine.Fours.Single().CuireAsync(lot2);
+
+                    foreach (GâteauCuit gc in gâteauCuits1)
+                    {
+                        ListeGâteauCuits.Add(gc);
+
+                    }
+                    foreach (GâteauCuit gc in gâteauCuits2)
+                    {
+                        ListeGâteauCuits.Add(gc);
+
+                    }
+
+
+
+
+                } while (ListeGâteauCuits.Count < 10);
+
+                do
+                {
+                    foreach (GâteauCuit gc in ListeGâteauCuits)
+                    {
+                        var gâteauEmballéTask = usine.Emballeuses.First().EmballerAsync(gc);
+                        ListeGâteauEmballésTask.Add(gâteauEmballéTask);
+
+                    }
+                } while (ListeGâteauEmballésTask.Count < 10);
+                var gâteauxEmballés = await Task.WhenAll(ListeGâteauEmballésTask);
+
+
+                foreach (GâteauEmballé ge in gâteauxEmballés)
+                {
+                    yield return ge;
+                }
             }
-        }
 
-        private static async IAsyncEnumerable<GâteauCuit> CuireParLotsAsync(
-            IAsyncEnumerable<GâteauCru> gâteaux, 
-            Cuisson four,
-            uint capacitéFour)
-        {
-            var buffer = new List<GâteauCru>((int) capacitéFour);
-            await foreach(var gâteauCru in gâteaux)
-            {
-                buffer.Add(gâteauCru);
-
-                if (buffer.Count != capacitéFour) continue;
-
-                var gâteauxCuits = await four.CuireAsync(buffer.ToArray());
-                foreach (var gâteauCuit in gâteauxCuits)
-                    yield return gâteauCuit;
-
-                buffer.Clear();
-            }
         }
     }
 }

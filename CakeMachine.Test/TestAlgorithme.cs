@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using CakeMachine.Fabrication;
 using CakeMachine.Simulation;
 using Xunit;
@@ -27,6 +28,21 @@ namespace CakeMachine.Test
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             algo.Produire(usine, cancellationTokenSource.Token).ToArray();
+        }
+
+        [Fact]
+        public async Task TestAlgoOptimisé()
+        {
+            var singleThread = new DixParDix();
+            var usine = new UsineBuilder().Build();
+
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            try
+            {
+                await foreach (var _ in singleThread.ProduireAsync(usine, cancellationTokenSource.Token))
+                {
+                }
+            }catch(OperationCanceledException){}
         }
     }
 }
