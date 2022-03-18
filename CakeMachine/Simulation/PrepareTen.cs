@@ -19,41 +19,34 @@ namespace CakeMachine.Simulation
         {
             while (!token.IsCancellationRequested)
             {
-                var plat = new Plat();
-                List<GâteauCru> ListeGâteauCrus = new List<GâteauCru>();
+              
                 List<GâteauCuit> ListeGâteauCuits = new List<GâteauCuit>();
                 List<GâteauEmballé> ListeGâteauEmballés = new List<GâteauEmballé>();
  
-                do
-                {
-                    var gâteauCru = usine.Préparateurs.First().Préparer(plat);
-                    ListeGâteauCrus.Add(gâteauCru);
-                } while (ListeGâteauCrus.Count < 10 );
+             
+                var plats = Enumerable.Range(0, 10).Select(_ => new Plat());
+                var gâteauCrus = plats
+                .Select(usine.Préparateurs.First().Préparer)
+                .AsParallel()
+                .ToArray();
                 
-                do
+                GâteauCru[] lot1 = gâteauCrus.Take(5).ToArray();
+                GâteauCru[] lot2 = gâteauCrus.TakeLast(5).ToArray();
+                var gâteauxCuits1 = usine.Fours.First().Cuire(lot1);
+                var gâteauxCuits2 = usine.Fours.First().Cuire(lot2);
+                foreach (GâteauCuit gc in gâteauxCuits1)
                 {
-                    foreach (GâteauCru g in ListeGâteauCrus)
-                    {
- 
-                        var gâteauCuit = usine.Fours.First().Cuire(g);
-                        foreach(GâteauCuit gc in gâteauCuit)
-                        {
-                            ListeGâteauCuits.Add(gc);
- 
-                        }
-                    }
-                } while (ListeGâteauCuits.Count < 10 );
-                
-                do
+                    ListeGâteauCuits.Add(gc);
+
+                }
+                foreach (GâteauCuit gc in gâteauxCuits2)
                 {
-                    foreach (GâteauCuit gc in ListeGâteauCuits)
-                    {
-                        var gâteauEmballé = usine.Emballeuses.First().Emballer(gc);
-                        ListeGâteauEmballés.Add(gâteauEmballé);
-                    }
-                } while (ListeGâteauEmballés.Count < 10 );
-     
-                foreach(GâteauEmballé ge in ListeGâteauEmballés)
+                    ListeGâteauCuits.Add(gc);
+
+                }
+                var gâteauxEmballés = ListeGâteauCuits.Select(usine.Emballeuses.First().Emballer).ToArray();
+                     
+                foreach(GâteauEmballé ge in gâteauxEmballés)
                 {
                     yield return ge;
                 }
