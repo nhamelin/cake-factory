@@ -4,7 +4,7 @@ using CakeMachine.Fabrication.Elements;
 
 namespace CakeMachine.Simulation
 {
-    internal class SingleThread : Algorithme
+    public class SingleThread : Algorithme
     {
         /// <inheritdoc />
         public override bool SupportsSync => true;
