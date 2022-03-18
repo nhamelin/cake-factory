@@ -22,16 +22,17 @@ namespace CakeMachine.Simulation
             while (!token.IsCancellationRequested)
             {
                 var plats = new[] { new Plat(), new Plat() };
+
                 var gâteauxCrus = plats
-                    .Select(postePréparation.Préparer)
                     .AsParallel()
+                    .Select(postePréparation.Préparer)
                     .ToArray();
 
                 var gâteauxCuits = posteCuisson.Cuire(gâteauxCrus);
 
                 var gâteauxEmballés = gâteauxCuits
-                    .Select(posteEmballage.Emballer)
-                    .AsParallel();
+                    .AsParallel()
+                    .Select(posteEmballage.Emballer);
 
                 foreach (var gâteauEmballé in gâteauxEmballés)
                     yield return gâteauEmballé;
@@ -47,14 +48,9 @@ namespace CakeMachine.Simulation
 
             while (!token.IsCancellationRequested)
             {
-                var plat1 = new Plat();
-                var plat2 = new Plat();
+                var plats = new[] { new Plat(), new Plat() };
 
-                var gâteauCru1Task = postePréparation.PréparerAsync(plat1);
-                var gâteauCru2Task = postePréparation.PréparerAsync(plat2);
-
-                var gâteauxCrus = await Task.WhenAll(gâteauCru1Task, gâteauCru2Task);
-
+                var gâteauxCrus = await Task.WhenAll(plats.Select(postePréparation.PréparerAsync));
                 var gâteauxCuits = await posteCuisson.CuireAsync(gâteauxCrus);
 
                 var gâteauEmballé1Task = posteEmballage.EmballerAsync(gâteauxCuits.First());
