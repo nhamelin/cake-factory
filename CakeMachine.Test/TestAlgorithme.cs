@@ -28,6 +28,18 @@ namespace CakeMachine.Test
 
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             algo.Produire(usine, cancellationTokenSource.Token).ToArray();
+
+        }
+        
+        public async Task TestAlgoOptimisé()
+        {
+            var singleThread = new Optimisée1Poste();
+            var usine = new UsineBuilder().Build();
+
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await foreach(var _ in singleThread.ProduireAsync(usine, cancellationTokenSource.Token))
+            {
+            }
         }
 
         [Fact]
