@@ -9,5 +9,10 @@
 
         /// <inheritdoc />
         public bool EstConforme { get; }
+
+        internal GâteauCru[] ToArray()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
