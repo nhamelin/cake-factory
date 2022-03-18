@@ -15,6 +15,11 @@ namespace CakeMachine.Simulation
         /// <inheritdoc />
         public override IEnumerable<GâteauEmballé> Produire(Usine usine, CancellationToken token)
         {
+            
+            var postePréparation = usine.Préparateurs.Single();
+            var posteCuisson = usine.Fours.Single();
+            var posteEmballage = usine.Emballeuses.Single();
+            
             while (!token.IsCancellationRequested)
             {
                 var plat = new Plat();
@@ -35,24 +40,8 @@ namespace CakeMachine.Simulation
                             {
                                 yield return gâteauEmballé;
                             }
-                            else
-                            {
-                                plat = new Plat();
-                            }
-                        }
-                        else
-                        {
-                            plat = new Plat();
                         }
                     }
-                    else
-                    {
-                        plat = new Plat();
-                    }
-                }
-                else
-                {
-                    plat = new Plat();
                 }
             }
         }
@@ -71,38 +60,26 @@ namespace CakeMachine.Simulation
                 
                 if (plat.EstConforme)
                 {
-                    var gâteauCru = usine.Préparateurs.First().Préparer(plat);
+                    var gâteauCruTask = postePréparation.PréparerAsync(plat);
+                    
+                    var gâteauxCrus = await Task.WhenAll(gâteauCruTask);
 
-                    if (gâteauCru.EstConforme)
+                    if (gâteauxCrus[0].EstConforme)
                     {
-                        var gâteauCuit = usine.Fours.First().Cuire(gâteauCru).Single();
+                        var gâteauxCuits = await posteCuisson.CuireAsync(gâteauxCrus);
 
-                        if (gâteauCuit.EstConforme)
+                        if (gâteauxCuits[0].EstConforme)
                         {
-                            var gâteauEmballé = usine.Emballeuses.First().Emballer(gâteauCuit);
+                            var gâteauEmballéTask = posteEmballage.EmballerAsync(gâteauxCuits[0]);
 
-                            if (gâteauEmballé.EstConforme)
+                            var gâteauxEmballés = await Task.WhenAll(gâteauEmballéTask);
+                            
+                            if (gâteauxEmballés[0].EstConforme)
                             {
-                                yield return gâteauEmballé;
-                            }
-                            else
-                            {
-                                plat = new Plat();
+                                yield return gâteauxEmballés[0];
                             }
                         }
-                        else
-                        {
-                            plat = new Plat();
-                        }
                     }
-                    else
-                    {
-                        plat = new Plat();
-                    }
-                }
-                else
-                {
-                    plat = new Plat();
                 }
             }
         }
