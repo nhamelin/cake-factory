@@ -22,27 +22,45 @@ namespace CakeMachine.Simulation
             
             while (!token.IsCancellationRequested)
             {
-                var plat = new Plat();
-
-                if (plat.EstConforme)
+                var plats = new[] { new Plat(), new Plat() };
+                
+                foreach (var p in plats)
                 {
-                    var gâteauCru = usine.Préparateurs.First().Préparer(plat);
-
-                    if (gâteauCru.EstConforme)
+                    if (p.EstConforme)
                     {
-                        var gâteauCuit = usine.Fours.First().Cuire(gâteauCru).Single();
+                        var gâteauxCrus = plats
+                            .Select(postePréparation.Préparer)
+                            .AsParallel()
+                            .ToArray();
 
-                        if (gâteauCuit.EstConforme)
+                        foreach (var gcru in gâteauxCrus)
                         {
-                            var gâteauEmballé = usine.Emballeuses.First().Emballer(gâteauCuit);
-
-                            if (gâteauEmballé.EstConforme)
+                            if (gcru.EstConforme)
                             {
-                                yield return gâteauEmballé;
+                                var gâteauxCuits = usine.Fours.First().Cuire(gâteauxCrus);
+
+                                foreach (var gcuit in gâteauxCuits)
+                                {
+                                    if (gcuit.EstConforme)
+                                    {
+                                        var gâteauxEmballés = gâteauxCuits
+                                            .Select(posteEmballage.Emballer)
+                                            .AsParallel();
+
+                                        foreach (var ge in gâteauxEmballés)
+                                        {
+                                            if (ge.EstConforme)
+                                            {
+                                                yield return ge;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                
             }
         }
 
