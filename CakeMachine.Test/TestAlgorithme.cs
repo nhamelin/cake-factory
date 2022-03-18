@@ -43,7 +43,7 @@ namespace CakeMachine.Test
         }
 
         [Fact]
-        public async Task TestAlgoOptimisé()
+        public async Task TestAlgoOptimisÃ©2()
         {
             var singleThread = new DixParDix();
             var usine = new UsineBuilder().Build();
